@@ -1,4 +1,4 @@
-module letmein.to/terraform-provider-identity-platform
+module github.com/sigmadigitalza/terraform-provider-identity-platform
 
 go 1.16
 
