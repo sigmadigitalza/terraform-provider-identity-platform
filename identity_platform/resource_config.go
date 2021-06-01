@@ -9,6 +9,7 @@ import (
 
 type Object map[string]interface{}
 type TerraformListType []Object
+type TerraformObjectType Object
 
 func resourceConfig() *schema.Resource {
 	return &schema.Resource{
@@ -40,6 +41,29 @@ func resourceConfig() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Default:  true,
+						},
+					},
+				},
+			},
+			"notification": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"sendEmail": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"callbackUri": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -140,6 +164,9 @@ func configFromResourceData(d *schema.ResourceData) (string, *idp.Config) {
 	phoneNumber := d.Get("phone_number").([]interface{})
 	subtype := d.Get("subtype").(string)
 	authorizedDomains := d.Get("authorized_domains").([]interface{})
+	notification := d.Get("notification").([]interface{})
+
+	sendEmail := extractProperties(notification)["sendEmail"].([]interface{})
 
 	config := &idp.Config{
 		SignIn: &idp.SignInConfig{
@@ -149,6 +176,11 @@ func configFromResourceData(d *schema.ResourceData) (string, *idp.Config) {
 			},
 			PhoneNumber: &idp.PhoneNumber{
 				Enabled: extractProperties(phoneNumber)["enabled"].(bool),
+			},
+		},
+		Notification: &idp.NotificationConfig{
+			SendEmail: &idp.SendEmail{
+				CallbackUri: extractProperties(sendEmail)["callbackUri"].(string),
 			},
 		},
 		Subtype:           subtype,
@@ -185,6 +217,18 @@ func hydrate(diags diag.Diagnostics, config *idp.Config, d *schema.ResourceData)
 	}
 
 	if err := d.Set("email", arr); err != nil {
+		diag.FromErr(err)
+	}
+
+	arr = TerraformListType{
+		{
+			"sendEmail": TerraformObjectType{
+				"callbackUri": config.Notification.SendEmail.CallbackUri,
+			},
+		},
+	}
+
+	if err := d.Set("notification", arr); err != nil {
 		diag.FromErr(err)
 	}
 

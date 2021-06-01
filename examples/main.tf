@@ -23,6 +23,12 @@ resource "identity_platform_config" "auth_config" {
     enabled = true
   }
 
+  notification {
+    sendEmail {
+      callbackUri = "https://test-callback-uri.co"
+    }
+  }
+
   subtype = "IDENTITY_PLATFORM"
 
   authorized_domains = [
