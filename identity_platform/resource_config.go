@@ -9,7 +9,6 @@ import (
 
 type Object map[string]interface{}
 type TerraformListType []Object
-type TerraformObjectType Object
 
 func resourceConfig() *schema.Resource {
 	return &schema.Resource{
