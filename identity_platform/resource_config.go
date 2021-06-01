@@ -222,7 +222,7 @@ func hydrate(diags diag.Diagnostics, config *idp.Config, d *schema.ResourceData)
 
 	arr = TerraformListType{
 		{
-			"sendEmail": TerraformObjectType{
+			"sendEmail": Object{
 				"callbackUri": config.Notification.SendEmail.CallbackUri,
 			},
 		},
