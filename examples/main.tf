@@ -23,6 +23,13 @@ resource "identity_platform_config" "auth_config" {
     enabled = true
   }
 
+  notification {
+    send_email {
+      method = "default"
+      callback_uri = "https://<gcp-project-id>.firebaseapp.com/__/auth/action"
+    }
+  }
+
   subtype = "IDENTITY_PLATFORM"
 
   authorized_domains = [

@@ -44,6 +44,34 @@ func resourceConfig() *schema.Resource {
 					},
 				},
 			},
+			"notification": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"send_email": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"method": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  "default",
+									},
+									"callback_uri": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"phone_number": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -140,6 +168,9 @@ func configFromResourceData(d *schema.ResourceData) (string, *idp.Config) {
 	phoneNumber := d.Get("phone_number").([]interface{})
 	subtype := d.Get("subtype").(string)
 	authorizedDomains := d.Get("authorized_domains").([]interface{})
+	notification := d.Get("notification").([]interface{})
+
+	sendEmail := extractProperties(notification)["send_email"].([]interface{})
 
 	config := &idp.Config{
 		SignIn: &idp.SignInConfig{
@@ -149,6 +180,12 @@ func configFromResourceData(d *schema.ResourceData) (string, *idp.Config) {
 			},
 			PhoneNumber: &idp.PhoneNumber{
 				Enabled: extractProperties(phoneNumber)["enabled"].(bool),
+			},
+		},
+		Notification: &idp.NotificationConfig{
+			SendEmail: &idp.SendEmail{
+				Method:      extractProperties(sendEmail)["method"].(string),
+				CallbackUri: extractProperties(sendEmail)["callback_uri"].(string),
 			},
 		},
 		Subtype:           subtype,
@@ -185,6 +222,19 @@ func hydrate(diags diag.Diagnostics, config *idp.Config, d *schema.ResourceData)
 	}
 
 	if err := d.Set("email", arr); err != nil {
+		diag.FromErr(err)
+	}
+
+	arr = TerraformListType{
+		{
+			"send_email": Object{
+				"method": config.Notification.SendEmail.Method,
+				"callback_uri": config.Notification.SendEmail.CallbackUri,
+			},
+		},
+	}
+
+	if err := d.Set("notification", arr); err != nil {
 		diag.FromErr(err)
 	}
 
