@@ -50,13 +50,18 @@ func resourceConfig() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"sendEmail": {
+						"send_email": {
 							Type:     schema.TypeList,
 							Optional: true,
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"callbackUri": {
+									"method": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Default:  "default",
+									},
+									"callback_uri": {
 										Type:     schema.TypeString,
 										Optional: true,
 										Default:  true,
@@ -165,7 +170,7 @@ func configFromResourceData(d *schema.ResourceData) (string, *idp.Config) {
 	authorizedDomains := d.Get("authorized_domains").([]interface{})
 	notification := d.Get("notification").([]interface{})
 
-	sendEmail := extractProperties(notification)["sendEmail"].([]interface{})
+	sendEmail := extractProperties(notification)["send_email"].([]interface{})
 
 	config := &idp.Config{
 		SignIn: &idp.SignInConfig{
@@ -179,7 +184,8 @@ func configFromResourceData(d *schema.ResourceData) (string, *idp.Config) {
 		},
 		Notification: &idp.NotificationConfig{
 			SendEmail: &idp.SendEmail{
-				CallbackUri: extractProperties(sendEmail)["callbackUri"].(string),
+				Method:      extractProperties(sendEmail)["method"].(string),
+				CallbackUri: extractProperties(sendEmail)["callback_uri"].(string),
 			},
 		},
 		Subtype:           subtype,
@@ -221,8 +227,9 @@ func hydrate(diags diag.Diagnostics, config *idp.Config, d *schema.ResourceData)
 
 	arr = TerraformListType{
 		{
-			"sendEmail": Object{
-				"callbackUri": config.Notification.SendEmail.CallbackUri,
+			"send_email": Object{
+				"method": config.Notification.SendEmail.Method,
+				"callback_uri": config.Notification.SendEmail.CallbackUri,
 			},
 		},
 	}

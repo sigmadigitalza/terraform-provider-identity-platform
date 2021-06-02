@@ -24,8 +24,9 @@ resource "identity_platform_config" "auth_config" {
   }
 
   notification {
-    sendEmail {
-      callbackUri = "https://test-callback-uri.co"
+    send_email {
+      method = "default"
+      callback_uri = "https://<gcp-project-id>.firebaseapp.com/__/auth/action"
     }
   }
 
