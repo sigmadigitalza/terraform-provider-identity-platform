@@ -64,6 +64,7 @@ func resourceConfig() *schema.Resource {
 									"callback_uri": {
 										Type:     schema.TypeString,
 										Optional: true,
+										Default: true,
 									},
 								},
 							},
