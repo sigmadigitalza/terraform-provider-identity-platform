@@ -21,9 +21,13 @@ See the [example](./examples/main.tf) directory for an example usage.
 
 ## Importing Config
 
-The resource ID used to import the Config must conform to the following syntax
+The resource ID used to import the Config must conform to the following syntax:
 
 `projects/<project-number>/config`
+
+The project number can be found on the homepage of the Google Dashboard.
+
+Example
 
 ```terraform
 terraform import identity_platform_config.test_config projects/1234567890/config
