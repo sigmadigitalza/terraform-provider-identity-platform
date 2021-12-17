@@ -2,13 +2,40 @@ package identity_platform
 
 import (
 	"context"
+	"errors"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	idp "github.com/sigmadigitalza/identity-platform-client"
+	"strings"
 )
 
 type Object map[string]interface{}
 type TerraformListType []Object
+
+var (
+	InvalidProjectIdError = errors.New("invalid project ID specified")
+)
+
+func importStateProjectConfigContext(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	id := d.Id()
+
+	if strings.Contains(id, "/") {
+		values := strings.Split(id, "/")
+
+		if len(values) != 3 {
+			return nil, InvalidProjectIdError
+		}
+
+		err := d.Set("project_id", values[1])
+		if err != nil {
+			return nil, err
+		}
+
+		d.SetId(id)
+	}
+
+	return []*schema.ResourceData{d}, nil
+}
 
 func resourceConfig() *schema.Resource {
 	return &schema.Resource{
@@ -98,6 +125,9 @@ func resourceConfig() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+		},
+		Importer: &schema.ResourceImporter{
+			StateContext: importStateProjectConfigContext,
 		},
 	}
 }
@@ -228,7 +258,7 @@ func hydrate(diags diag.Diagnostics, config *idp.Config, d *schema.ResourceData)
 	arr = TerraformListType{
 		{
 			"send_email": Object{
-				"method": config.Notification.SendEmail.Method,
+				"method":       config.Notification.SendEmail.Method,
 				"callback_uri": config.Notification.SendEmail.CallbackUri,
 			},
 		},
