@@ -9,7 +9,7 @@ terraform {
 
 provider "identity-platform" {}
 
-resource "identity_platform_config" "auth_config" {
+resource "identity_platform_config" "test_config" {
   provider = identity-platform
 
   project_id = "<gcp-project-id>"
